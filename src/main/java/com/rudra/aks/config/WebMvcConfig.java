@@ -13,7 +13,7 @@ import org.springframework.web.servlet.view.freemarker.FreeMarkerViewResolver;
 
 
 @Configuration
-@ComponentScan(basePackages = {"com.rudra.aks.web"} )
+@ComponentScan//(basePackages = {"com.rudra.aks.web", "com.rudra.aks.util"} )
 @EnableWebMvc
 public class WebMvcConfig extends WebMvcConfigurerAdapter {
 

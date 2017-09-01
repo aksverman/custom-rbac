@@ -16,7 +16,7 @@ public class CurrentUser extends org.springframework.security.core.userdetails.U
 	private UserBO user;
 
     public CurrentUser(UserBO user) {
-        super(user.getUsername(), user.getPassword(), getAuthorities(user.getRoles()));
+        super(user.getUsername(), user.getPassword(), getAuthorities(user.getRole()));
         this.user = user;
     }
 
@@ -28,23 +28,26 @@ public class CurrentUser extends org.springframework.security.core.userdetails.U
         return user.getUserid();
     }
 
-    public Collection<Role> getRoles() {
-        return user.getRoles();
+    public Role getRole() {
+        return user.getRole();
     }
 
-    private final static Collection<? extends GrantedAuthority> getAuthorities(final Collection<Role> roles) {
-        return getGrantedAuthorities(getPrivileges(roles));
+    private final static Collection<? extends GrantedAuthority> getAuthorities(final Role role) {
+        return getGrantedAuthorities(getPrivileges(role));
     }
 
-    private final static List<String> getPrivileges(final Collection<Role> roles) {
+    /**
+     * To get all the privileges associated to given ROLE
+     * @param roles Role of user
+     * @return list of privileges in string format
+     */
+    private final static List<String> getPrivileges(final Role role) {
         final List<String> privileges = new ArrayList<String>();
         final List<Privilege> collection = new ArrayList<Privilege>();
-        for (final Role role : roles) {
-            collection.addAll(role.getPrivileges());
-        }
-        for (final Privilege item : collection) {
+        
+        collection.addAll(role.getPrivileges());
+        for (final Privilege item : collection) 
             privileges.add(item.getName());
-        }
         
         return privileges;
     }

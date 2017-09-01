@@ -7,5 +7,5 @@
 <body>
   <h3> Sorry! You don't have access to this requested resource. <br/> Try again!
   <b><c:out value="${pageContext.request.remoteUser}"/></b></h3>
-  <a href="/security-java/index.jsp"> Home </a>
+  <a href="/rbac-security/"> Home </a>
   <br/><br/>

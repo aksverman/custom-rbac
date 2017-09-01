@@ -19,7 +19,8 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 
 @Configuration
-@ComponentScan(basePackages = {"com.rudra.aks.persistence", "com.rudra.aks.service"} )
+@ComponentScan(basePackages = {"com.rudra.aks.persistence", "com.rudra.aks.service", "com.rudra.aks.util", 
+		"com.rudra.aks.web", "com.rudra.aks.util"} )
 @EnableJpaRepositories(basePackages = { "com.rudra.aks.repository" })
 @EnableTransactionManagement
 public class PersistenceConfig {

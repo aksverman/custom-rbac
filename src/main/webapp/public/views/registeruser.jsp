@@ -12,18 +12,25 @@
 
 <body>
  	<h2>User Registration Form</h2>
- 	<form:form method="POST" modelAttribute="userbo" action="/security-java/user/create">
+ 	<form:form method="POST" modelAttribute="userform" action="/rbac-security/user/addUser">
 		<form:input type="hidden" path="userid"/>
+		
 		<label for="username">UserName</label>
 				<form:input type="text" path="username" id="username"/> <br/> <br/>
+		
 		<label for="password">Password</label>
 				<form:input type="password" path="password" id="password"/> <br/> <br/>
+		
 		<label for="emailid">Email-ID</label>
 				<form:input type="text" path="emailid" id="emailid"/> <br/> <br/>
-		<form:select path="role">
-			<form:option path="role" value="ROLE_USER">USER</form:option>
-			<form:option path="role" value="ROLE_ADMIN">ADMIN</form:option> <br/> <br/>
-		</form:select>
+		
+		<label for="role">User-Role</label>
+			<form:select path="role">
+				<form:option path="role" value="DEV"> DEV </form:option>
+				<form:option path="role" value="QA">   QA </form:option>
+				<form:option path="role" value="PMT"> PMT </form:option> <br/> <br/>
+			</form:select>
+		
 		<input type = "submit"	value = "Submit"/>
 	</form:form>
 </body>			

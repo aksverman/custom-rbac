@@ -8,6 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -19,6 +20,7 @@ import org.springframework.security.web.authentication.rememberme.PersistentToke
 @Configuration
 @ComponentScan({ "com.rudra.aks.security" })
 @EnableWebSecurity
+@EnableGlobalMethodSecurity( prePostEnabled = true )
 public class RBACSecurityConfig extends WebSecurityConfigurerAdapter {
 
 
@@ -47,12 +49,13 @@ public class RBACSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
  	protected void configure(HttpSecurity http) throws Exception {
  		http.authorizeRequests()
- 			/*.mvcMatchers("/", "/public/**").permitAll()
- 			.antMatchers("/user/**").permitAll()*/
- 			//.antMatchers("/user/**").hasRole("ADMIN")//.anyRequest()//.fullyAuthenticated()
+ 			.mvcMatchers("/", "/public/**").permitAll()
+ 			.mvcMatchers("/user/addUser/**", "/user/registerForm/**", "/role/**").permitAll()
+ 			.antMatchers("/user/**").authenticated()//.anyRequest()//.fullyAuthenticated()
  			.and().exceptionHandling().accessDeniedPage("/accessdenied/")
  			.and()
- 			.formLogin()//.loginPage("/user/login") // enable custome form based log in
+ 			.formLogin()
+ 			.defaultSuccessUrl("/user/successlogin")//.loginPage("/user/login") // enable custome form based log in
  			//.loginProcessingUrl("/user/login")
  			.permitAll()
  			.and()
