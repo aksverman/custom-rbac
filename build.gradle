@@ -14,6 +14,7 @@ jar {
 
 repositories {
     mavenCentral()
+	maven { url 'http://sndyuk.github.com/maven' }
 }
 
 dependencies {
@@ -38,14 +39,27 @@ dependencies {
 	compile group: 'commons-dbcp', name: 'commons-dbcp', version: '1.2.2'
 	compile "javax.servlet:javax.servlet-api:3.1.0"
 	compile 'log4j:log4j:1.2.14'
+	
+	compile group: 'javax.mail', name: 'javax.mail-api', version: '1.5.5'
+	compile group: 'com.sun.mail', name: 'javax.mail', version: '1.5.5'
+	
+	compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.8.9'
+	
+	
 	compile group: 'javax.servlet', name: 'jstl', version: '1.2'
 	compile group: 'javax.servlet.jsp', name: 'jsp-api', version: '2.1'
 	compile group: 'org.apache.taglibs', name: 'taglibs-standard-impl', version: '1.2.1'
 	compile group: 'jstl', name: 'jstl', version: '1.2'
 	compile group: 'org.slf4j', name: 'slf4j-api', version: '1.7.5'
 	testCompile group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.5'
+	compile group: 'ch.qos.logback', name: 'logback-classic', version: '1.1.11'
 	
-    testCompile group: 'junit', name: 'junit', version: '4.+'
+/*	compile 'org.fluentd:fluent-logger:0.3.2'
+	compile 'com.sndyuk:logback-more-appenders:1.1.1'
+	
+	compile files('libs/RudraLogger-1.0.0.jar')
+	runtime files('libs/RudraLogger-1.0.0.jar')
+*/    testCompile group: 'junit', name: 'junit', version: '4.+'
 }
 
 test {

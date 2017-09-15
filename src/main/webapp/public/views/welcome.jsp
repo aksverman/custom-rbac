@@ -22,6 +22,9 @@
 		</tr>
 	</table> --%>
 	
+	<c:out value="${msg}"/><br/><br/>
+	<a href = "/rbac-security/admin/changePasswordform/?userid=${userid}&token=dummytoken"> Change Password</a>
+	
 	<c:forEach items="${ privileges }" var = "privilege">
 		<table cellspacing='12px'> <tr>
 			<c:if test = "${privilege.name == 'EDIT' }"> 
@@ -45,14 +48,7 @@
 		</tr></table>
 	</c:forEach>
 	 
-	<%-- <form:form method="GET" modelAttribute="userform" action="/rbac-security/user/deleteUser">
-			<form:select path = "userid">
-				<c:forEach items="${ deleteUsersList }" var = "userupdateid">
-					<form:option path = "userid" value="${userupdateid}"> ${userupdateid} </form:option>
-				</c:forEach>
-			</form:select> <br/> <br/>
-			<input type = "submit"	value = "Delete"/>
-	</form:form> --%>
+	
 	
 	<form  action="/rbac-security/logout" method="post">
 	      <input type="submit" value="Log out" />

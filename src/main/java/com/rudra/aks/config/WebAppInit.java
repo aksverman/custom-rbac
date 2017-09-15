@@ -1,6 +1,11 @@
 package com.rudra.aks.config;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
+
 import org.springframework.web.servlet.support.AbstractAnnotationConfigDispatcherServletInitializer;
+
+import com.rudra.aks.util.SessionListener;
 
 
 public class WebAppInit extends AbstractAnnotationConfigDispatcherServletInitializer {
@@ -19,5 +24,13 @@ public class WebAppInit extends AbstractAnnotationConfigDispatcherServletInitial
 	protected String[] getServletMappings() {
 		return new String[] { "/" };
 	}
+
+	@Override
+	public void onStartup(ServletContext servletContext) throws ServletException {
+		servletContext.addListener(new SessionListener());
+		super.onStartup(servletContext);
+	}
+	
+	
 
 }

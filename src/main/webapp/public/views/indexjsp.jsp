@@ -2,21 +2,23 @@
 
 <html>
 <head>
-   <title> Register a New User </title>
+   <title> RBAC Security </title>
 </head>
 <body>
 <h1> Welcome!  RBAC Securities !</h1>
 	    <p> Hello User</p>
-	    <b><c:out value="${pageContext.request.remoteUser}"/></b>
+	    <b><c:out value="${username}"/></b>
 	    <hr color="red"/>
-
+	<c:url value="${pageContext.request.contextPath}" var="contextpath"/>
 	<table cellspacing='12px'> 
 	    <tr>
 	     	<th rowspan="2"> <a href = "/rbac-security/user/registerForm"> Create User </a> </th>
 			<th rowspan="2"> <a href = "/rbac-security/login"> Login </a> </th>
+			<th rowspan="2"> <a href = "/rbac-security/admin/resetpasswordform"> Reset Password</a> </th>
 		</tr>
 	</table>
 	
+	<c:out value="${msg}"/>
 	<form  action="/rbac-security/logout" method="post">
 	      <input type="submit" value="Log out" />
 	      <!--	HTTP ERROR 403

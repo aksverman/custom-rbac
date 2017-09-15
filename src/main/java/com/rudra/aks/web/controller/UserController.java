@@ -2,7 +2,6 @@ package com.rudra.aks.web.controller;
 
 import static com.rudra.aks.constants.Constants.*;
 
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -16,12 +15,12 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 
+import com.rudra.aks.exception.CustomException;
 import com.rudra.aks.model.CurrentUser;
 import com.rudra.aks.model.Privilege;
 import com.rudra.aks.model.UserBO;
@@ -82,7 +81,7 @@ public class UserController {
 	//@PreAuthorize("@customAuthorizationUtil.isAuthorize(principal, #header)")
 	//@PreAuthorize("hasAuthority('DELETE')")
 	@RequestMapping( value = "/deleteUser", method = RequestMethod.GET) 
-	public ModelAndView	deleteUser( @ModelAttribute("userform") UserBO user,@RequestHeader HttpHeaders header) {
+	public ModelAndView	deleteUser( @ModelAttribute("userform") UserBO user,@RequestHeader HttpHeaders header) throws Exception {
 		logger.info("Deleting user info : " + user);
 		if( user != null)
 			userService.deleteUser(user.getUsername());
@@ -92,7 +91,7 @@ public class UserController {
 	
 	@PreAuthorize("@customAuthorizationUtil.isAuthorize(authentication, 'EDIT')")
 	@RequestMapping( value = "/updateUser", method = RequestMethod.POST) 
-	public ModelAndView	updateUser( @ModelAttribute("userform") UserBO user, BindingResult bindingResult) {
+	public ModelAndView	updateUser( @ModelAttribute("userform") UserBO user, BindingResult bindingResult) throws CustomException {
 		logger.info("Updating user info : " + user);
 		if( bindingResult.hasErrors())
 			return new ModelAndView(INDEX_PAGE, "bindingerrors", bindingResult.getAllErrors());
@@ -130,7 +129,7 @@ public class UserController {
 	
 	@RequestMapping(value="/successlogin")
 	public ModelAndView login() {
-		logger.info("User logged in successfully.");
+		logger.info("User logged in successfully." + VIEW_ACCESS);
 		ModelAndView model = new ModelAndView();
 		List<String> deleteUsersList = userService.getUpdatableUsersList();
 		
@@ -141,6 +140,8 @@ public class UserController {
 	    model.setViewName(HOME_PAGE);
 	    model.addObject("deleteUsersList", deleteUsersList);
 	    model.addObject("privileges", privilegesSet);
+	    model.addObject("userid", currentUser.getUserId());
+	    model.addObject("username", currentUser.getUsername());
 	    logger.info("List of users for update : " + deleteUsersList);
 		//return new ModelAndView( "customhome", "deleteUsersList", deleteUsersList );
 		//return new ModelAndView(HOME_PAGE, "privileges", privilegesSet);

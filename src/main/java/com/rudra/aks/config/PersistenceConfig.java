@@ -7,9 +7,14 @@ import javax.sql.DataSource;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
+import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
@@ -20,9 +25,10 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @Configuration
 @ComponentScan(basePackages = {"com.rudra.aks.persistence", "com.rudra.aks.service", "com.rudra.aks.util", 
-		"com.rudra.aks.web", "com.rudra.aks.util"} )
+		"com.rudra.aks.web", "com.rudra.aks.util", "com.rudra.aks.exception"} )
 @EnableJpaRepositories(basePackages = { "com.rudra.aks.repository" })
 @EnableTransactionManagement
+@PropertySource({ "classpath:rbac_constants.properties" })
 public class PersistenceConfig {
 
 
@@ -58,7 +64,39 @@ public class PersistenceConfig {
 	public PersistenceExceptionTranslationPostProcessor exceptionTranslation(){
 		return new PersistenceExceptionTranslationPostProcessor();
 	}
+	
+	@Bean
+	public JavaMailSender	mailSender() {
+		JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
+		mailSender.setHost("smtp.gmail.com");
+	    mailSender.setPort(587);
+	     
+	    mailSender.setUsername("vermanjava@gmail.com");
+	    mailSender.setPassword("IMprince@46");
+	     
+	    Properties props = mailSender.getJavaMailProperties();
+	    props.put("mail.transport.protocol", "smtp");
+	    props.put("mail.smtp.auth", "true");
+	    props.put("mail.smtp.starttls.enable", "true");
+	    props.put("mail.debug", "true");
+	     
+	    return mailSender;
+	}
    
+	@Bean
+	public ReloadableResourceBundleMessageSource	messageSource() {
+		ReloadableResourceBundleMessageSource source = new ReloadableResourceBundleMessageSource();
+		source.setBasename("classpath:messages");
+		return source;
+	}
+	
+	@Bean
+	public PropertySourcesPlaceholderConfigurer	propertyConfig() {
+		PropertySourcesPlaceholderConfigurer sources = new PropertySourcesPlaceholderConfigurer();
+		sources.setIgnoreUnresolvablePlaceholders(true);
+		return sources;
+	}
+	
 	Properties additionalProperties() {
 		Properties properties = new Properties();
 		properties.setProperty("hibernate.hbm2ddl.auto", "update");

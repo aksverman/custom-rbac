@@ -1,8 +1,13 @@
 package com.rudra.aks.service.impl;
 
+import static com.rudra.aks.constants.Constants.FROM_ADDRESS;
+import static com.rudra.aks.constants.Constants.RESET_TOKEN_SUB;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.persistence.EntityManager;
@@ -12,12 +17,18 @@ import org.apache.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.MailException;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.rudra.aks.exception.CustomException;
+import com.rudra.aks.model.PasswordResetToken;
 import com.rudra.aks.model.Role;
 import com.rudra.aks.model.UserBO;
 import com.rudra.aks.repository.RoleRepository;
+import com.rudra.aks.repository.TokenRepository;
 import com.rudra.aks.repository.UserRepository;
 import com.rudra.aks.service.RoleService;
 import com.rudra.aks.service.UserService;
@@ -35,12 +46,20 @@ public class UserServiceImpl implements UserService {
 	RoleRepository	roleRepository;
 	
 	@Autowired
+	TokenRepository		tokenRepo;
+	
+	@Autowired
 	RoleService		roleService;
+	
+	@Autowired
+	JavaMailSender		mailSender;
 	
 	@Autowired
 	EntityManagerFactory	emFactory;
 	
 	private EntityManager entityManager;
+	
+	private String 	contextPath;
 	
 	@PostConstruct
 	public void createEntityManager() {
@@ -71,10 +90,16 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public boolean deleteUser(String username) {
-		userRepository.delete(userRepository.findOneByUsername(username).get());
+	public boolean deleteUser(String username) throws Exception {
+		try {	
+			userRepository.delete(userRepository.findOneByUsername(username).get());	
+		}
+		catch ( Exception ex) {
+			throw new CustomException("E0002", username);		
+		}
 		return true;
 	}
+	
 	
 	@Override
 	public List<UserBO> usersList() {
@@ -89,7 +114,7 @@ public class UserServiceImpl implements UserService {
 	 * @see com.rudra.aks.service.UserService#updateUser(com.rudra.aks.model.UserBO)
 	 */
 	@Override
-	public UserBO updateUser(UserBO user) {
+	public UserBO updateUser(UserBO user) throws CustomException {
 		//return userRepository.save(user);
 		//user.setUserid(userRepository.findOneByUsername(user.getUsername()).get().getUserid());
 		logger.info("Start : " + getClass().getName() + " : updateUser()");
@@ -97,16 +122,22 @@ public class UserServiceImpl implements UserService {
 		Session session = entityManager.unwrap(Session.class);
 		Transaction tx = session.beginTransaction();
 		
-		UserBO userfromdb = userRepository.findOneByUsername(user.getUsername()).get();
-		int userid = userfromdb.getUserid();
-		Role existingRole = userfromdb.getRole();
-		
-		UserBO userToUpdate = userRepository.getOne(userid);
-		userToUpdate.setEmailid(user.getEmailid());
-		userToUpdate.setPassword(user.getPassword());
-		userToUpdate.setRole(existingRole);
-		
-		session.update(userToUpdate);
+		UserBO userToUpdate = null;
+		try {
+			UserBO userfromdb = userRepository.findOneByUsername(user.getUsername()).get();
+			int userid = userfromdb.getUserid();
+			Role existingRole = userfromdb.getRole();
+			
+			userToUpdate = userRepository.getOne(userid);
+			userToUpdate.setEmailid(user.getEmailid());
+			userToUpdate.setPassword(user.getPassword());
+			userToUpdate.setRole(existingRole);
+			
+			session.update(userToUpdate);
+		} catch (Exception e) {
+			logger.info("Exception occurred while updating user : " + user);
+			throw new CustomException("E0003", new Object[] {  user.getUsername(), user.getEmailid() }, e);
+		}
 		tx.commit();
 		session.close();
 		
@@ -145,6 +176,81 @@ public class UserServiceImpl implements UserService {
 		return null;
 	}
 	
+	
+	@Override
+	public boolean resetPassword(String username, String contextPath) {
+		this.contextPath = contextPath;
+		UserBO user = userRepository.findOneByUsername(username).get();
+		if(user == null)
+			return false;
+		String token = UUID.randomUUID().toString();
+		createPasswordResetToken(user, token);
+		sendMailToUser(user, token);
+		return true;
+	}
+
+	
+	@Override
+	public String validatePasswordChangeRequest(int userid, String token) {
+		
+		PasswordResetToken resetToken = tokenRepo.findByToken(token).get();
+		if (resetToken == null || userid != resetToken.getUser().getUserid())
+			return "Token Not Found or Invalid.";
+		
+		Calendar	cal = Calendar.getInstance();
+		if ((resetToken.getExpiryDate().getTime() - cal.getTime().getTime()) <= 0)
+			return 	"Token is exipred.";
+		
+		return "token validated";
+	}
+		
+	@Override
+	public String updatePassword(int userid, String pass1) {
+		UserBO usertoupdate = userRepository.getOne(userid);
+		usertoupdate.setPassword(pass1);
+		return userRepository.save(usertoupdate).getPassword();		
+	}
+
+	private void sendMailToUser(UserBO user, String token) {
+		String mailContent = prepareMailContent(user, token);
+		
+		try {
+			SimpleMailMessage mailMessage = new SimpleMailMessage();
+			mailMessage.setFrom(FROM_ADDRESS);
+			mailMessage.setTo(user.getEmailid());
+			mailMessage.setSubject(RESET_TOKEN_SUB);
+			mailMessage.setText(mailContent);
+			
+			mailSender.send(mailMessage);
+		} catch (MailException e) {
+			logger.error("Exception while sending mail... " + e.getMessage());
+		} catch (Exception e) {
+			logger.error("Exception occurred " + e);
+		}
+			
+		logger.info("Mail Send to ... " + user.getEmailid());
+	}
+
+	private String prepareMailContent(UserBO user, String token) {
+		
+		String resetUrl = new StringBuilder().append(contextPath)
+				.append("/admin/changePasswordform?userid=")
+				.append(user.getUserid())
+				.append("&token=").append(token).toString();
+		
+		String msgBody = new StringBuilder().append("Hi, " + user.getUsername() )
+			.append("\n You have requested to reset your password.")
+			.append("\n\n Click below link to reset your password.")
+			.append("\n\n" + resetUrl ).toString();
+		
+		return msgBody;
+	}
+
+	private void createPasswordResetToken(UserBO user, String token) {
+		PasswordResetToken resetToken = new PasswordResetToken(token, user);
+		tokenRepo.save(resetToken);
+	}
+
 	/**
 	 * Set default role to new user, DEV is default role.
 	 * @param user
@@ -168,4 +274,6 @@ public class UserServiceImpl implements UserService {
 		logger.info("User's role added : " + user);
 	}
 
+	
+	
 }

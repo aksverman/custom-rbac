@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.authentication.rememberme.JdbcTokenRepositoryImpl;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
 @Configuration
 @ComponentScan({ "com.rudra.aks.security" })
@@ -49,13 +50,27 @@ public class RBACSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
  	protected void configure(HttpSecurity http) throws Exception {
  		http.authorizeRequests()
- 			.mvcMatchers("/", "/public/**").permitAll()
+ 			.antMatchers("/rest-user", "/rest-accessdenied/**", "/rest-admin/resetpassword/**", "/login/**").permitAll()
+			.mvcMatchers("/rest-user/addUser/**", "/rest-user/registerForm/**", "/role/**").permitAll()
+			.antMatchers("/rest-user/**").authenticated()
+			.and()
+			.httpBasic()
+			.authenticationEntryPoint(new CustomEntryPoint())
+			.and().csrf().disable();
+			
+ 			
+			/*.antMatchers("/", "/accessdenied/**", "/admin/resetpassword/**", "/login/**").permitAll()
  			.mvcMatchers("/user/addUser/**", "/user/registerForm/**", "/role/**").permitAll()
  			.antMatchers("/user/**").authenticated()//.anyRequest()//.fullyAuthenticated()
- 			.and().exceptionHandling().accessDeniedPage("/accessdenied/")
+ 			.antMatchers("/admin/**").fullyAuthenticated()
+ 			.antMatchers("/admin/test/**").fullyAuthenticated()
+ 			.and()
+ 			.exceptionHandling()
+ 			.accessDeniedHandler(new CustomAccessDeniedHandler())
  			.and()
  			.formLogin()
- 			.defaultSuccessUrl("/user/successlogin")//.loginPage("/user/login") // enable custome form based log in
+ 			//.loginPage("/loginpage") // enable custome form based log in
+ 			.defaultSuccessUrl("/user/successlogin")
  			//.loginProcessingUrl("/user/login")
  			.permitAll()
  			.and()
@@ -66,7 +81,10 @@ public class RBACSecurityConfig extends WebSecurityConfigurerAdapter {
  			.and()
  			.rememberMe().tokenRepository(persistentTokenRepository()).tokenValiditySeconds(12000)
  			//.rememberMe().tokenRepository(tokenRepository).tokenValiditySeconds(12000)
- 			.and().sessionManagement().maximumSessions(1);
+ 			.and().sessionManagement()
+ 			//.invalidSessionUrl("/accessdenied/sessionExpired")
+ 			.maximumSessions(1)
+ 			.expiredUrl("/accessdenied/tooManySessions");*/
  	}
 
 	@Override
