@@ -29,7 +29,7 @@ public class Constants {
 	 * Sets default expire time for password reset tokens
 	 * Default time in minutes is 2 days long [ 2d * 24 hrs * 60 mnts ]
 	 */
-	public static final int	TOKEN_EXPIRE_TIME = 5; //2*24*60;
+	public static final int	TOKEN_EXPIRE_TIME = 6; //2*24*60;
 	
 	@Value("${Permission_VIEW}")
 	public static String VIEW_ACCESS;
